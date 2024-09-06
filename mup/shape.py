@@ -15,14 +15,17 @@ __BSH_COMMENT__ = '''\
 # - a number indicates the base dimension of an "infinite" dimension, i.e. some notion of "width"
 '''
 
+def _clean_param_name(name):
+    return name.replace("_fsdp_wrapped_module.", "")
+
 def get_shapes(model):
     # If you want to implement a custom shapes function, you can use this name
     if hasattr(model, "get_shapes"):
         return model.get_shapes()
-    return {name: param.shape for name, param in model.named_parameters()}
+    return {_clean_param_name(name): param.shape for name, param in model.named_parameters()}
 
 def get_infshapes(model):
-    return {name: param.infshape for name, param in model.named_parameters()}
+    return {_clean_param_name(name): param.infshape for name, param in model.named_parameters()}
 
 def save_base_shapes(model_or_shapes, file):
     if isinstance(model_or_shapes, nn.Module):
@@ -58,7 +61,6 @@ def _dataparallel_hack(base_shapes, shapes):
         all(k.startswith('module.') for k in base_shapes):
         return {k.strip('module.'): v for k, v in base_shapes.items()}, shapes
     return base_shapes, shapes
-
 
 def _extract_shapes(x):
     '''
@@ -154,7 +156,7 @@ def make_base_shapes(base_shapes, delta_shapes, savefile=None):
 
 def apply_infshapes(model, infshapes):
     for name, p in model.named_parameters():
-        p.infshape = infshapes[name]
+        p.infshape = infshapes[_clean_param_name(name)]
 
 def _fix_fsdp_readout(module):
     assert isinstance(module, MuReadout)
