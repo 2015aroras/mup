@@ -158,6 +158,11 @@ def apply_infshapes(model, infshapes):
     for name, p in model.named_parameters():
         p.infshape = infshapes[_clean_param_name(name)]
 
+    for name, module in model.named_modules():
+        if isinstance(module, MuReadout):
+            _fix_fsdp_readout(module)
+
+
 def _fix_fsdp_readout(module):
     assert isinstance(module, MuReadout)
     assert hasattr(module.weight, 'infshape')
