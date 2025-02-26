@@ -25,6 +25,8 @@ class MuReadout(Linear):
             super().reset_parameters()
 
     def width_mult(self):
+        if hasattr(self, 'infshape'):
+            width_mult = self.infshape.width_mult()
         if hasattr(self.weight, 'infshape'):
             width_mult = self.weight.infshape.width_mult()
         elif hasattr(self, 'weight_infshape'):
