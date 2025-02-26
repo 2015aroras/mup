@@ -15,7 +15,10 @@ __BSH_COMMENT__ = '''\
 # - a number indicates the base dimension of an "infinite" dimension, i.e. some notion of "width"
 '''
 
-def _clean_param_name(name):
+def _clean_param_name(name: str):
+    if name.startswith("module."):
+        # Remove 'module.' prefix that is added by DDP
+        name = name.replace("module.", "", 1)
     return name.replace("_fsdp_wrapped_module.", "")
 
 def get_shapes(model):
